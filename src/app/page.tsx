@@ -1,95 +1,45 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+
+import { Center, SimpleGrid, Spinner } from "@chakra-ui/react";
+import { FetchError } from "@components/components/fetch-error";
+import { Mesa } from "@components/components/mesa";
+import { NotFound } from "@components/components/not-found";
+import { useFetchMesas } from "@components/hooks/useFetchMesas";
+import { useMesaObj } from "@components/hooks/useMesaObj";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { isLoading, data, isError, refetch } = useFetchMesas();
+
+  const { mesas, editaMesa } = useMesaObj();
+
+  useEffect(() => {
+    if (data && data.length > 0) editaMesa({ action: "initial", data });
+  }, [data]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <Center h={"100vh"} w={"100vw"}>
+      {(() => {
+        if (isLoading) {
+          return <Spinner color="red.500" />;
+        }
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+        if (isError) {
+          return <FetchError tryAgain={refetch} />;
+        }
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+        if (mesas && mesas.length === 0) {
+          return <NotFound />;
+        }
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+        return (
+          <SimpleGrid columns={4} spacing={12}>
+            {mesas?.map(({ cor, nome, texto, id_mesa }) => (
+              <Mesa key={id_mesa} cor={cor} nome={nome} texto={texto} />
+            ))}
+          </SimpleGrid>
+        );
+      })()}
+    </Center>
+  );
 }
